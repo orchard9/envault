@@ -1,0 +1,24 @@
+# Example .envault/config.yaml
+# Copy this to your project's .envault/ directory
+
+environments:
+  # Development environment
+  dev:
+    encrypted_file: dev.age
+    targets:
+      - path: .env                      # Root .env file
+      - path: apps/api/.env             # API service env
+      - path: apps/worker/.env          # Worker service env
+      - path: apps/web/.env             # Frontend env
+
+  # Staging environment
+  staging:
+    encrypted_file: staging.age
+    targets:
+      - path: .env.staging
+
+  # Production environment (optional - usually uses GSM)
+  prod:
+    encrypted_file: prod.age
+    targets:
+      - path: .env.production
