@@ -168,9 +168,7 @@ func handleRemoveKey() {
 
 	fmt.Println("✓ Removed SSH public key")
 	fmt.Println("\nIMPORTANT: Re-encrypt all environments to revoke access:")
-	fmt.Println("  envault reencrypt dev")
-	fmt.Println("  envault reencrypt staging")
-	fmt.Println("  envault reencrypt prod")
+	fmt.Println("  envault reencrypt")
 }
 
 func handleListKeys() {
@@ -222,10 +220,25 @@ func handleDecrypt() {
 }
 
 func handleReencrypt() {
+	// If no environment specified, re-encrypt all
 	if len(os.Args) < 3 {
-		fatal("Usage: envault reencrypt <environment>")
+		envs, err := crypto.ReencryptAll()
+		if err != nil {
+			// Check if we partially succeeded
+			if len(envs) > 0 {
+				fmt.Printf("✓ Re-encrypted: %s\n", strings.Join(envs, ", "))
+			}
+			fatal("Failed to reencrypt all: %v", err)
+		}
+
+		fmt.Printf("✓ Re-encrypted all environments with current authorized_keys:\n")
+		for _, env := range envs {
+			fmt.Printf("  - %s\n", env)
+		}
+		return
 	}
 
+	// Re-encrypt specific environment
 	envName := os.Args[2]
 
 	if err := crypto.Reencrypt(envName); err != nil {
@@ -293,7 +306,7 @@ func printUsage() {
 	fmt.Println("  list-keys                     List authorized keys")
 	fmt.Println("  encrypt <env> <file>          Encrypt plaintext file")
 	fmt.Println("  decrypt <env>                 Decrypt environment to stdout")
-	fmt.Println("  reencrypt <env>               Re-encrypt with updated keys")
+	fmt.Println("  reencrypt [env]               Re-encrypt with updated keys (all envs if not specified)")
 	fmt.Println("  check                         Verify configuration")
 	fmt.Println("  version                       Show version")
 	fmt.Println("  help                          Show this help")

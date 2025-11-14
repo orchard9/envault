@@ -1,0 +1,98 @@
+# GoReleaser configuration for envault
+# Documentation: https://goreleaser.com
+
+version: 2
+
+before:
+  hooks:
+    # Ensure dependencies are up to date
+    - go mod tidy
+
+builds:
+  - id: envault
+    main: ./cmd/envault
+    binary: envault
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Ignore unsupported combinations
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+
+archives:
+  - id: envault
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - 'README'
+      - 'typo'
+
+release:
+  github:
+    owner: orchard9
+    name: envault
+  draft: false
+  prerelease: auto
+  mode: replace
+  name_template: "v{{.Version}}"
+  header: |
+    ## envault {{.Version}}
+
+    **Encrypted environment secrets, version controlled, SSH-authenticated**
+
+    ### Installation
+
+    ```bash
+    # Quick install (macOS/Linux)
+    curl -sSL https://raw.githubusercontent.com/orchard9/envault/main/install.sh | bash
+
+    # Or with Go
+    go install github.com/orchard9/envault/cmd/envault@latest
+    ```
+
+    ### What's Changed
+  footer: |
+    **Full Changelog**: https://github.com/orchard9/envault/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+    ---
+
+    ### Requirements
+    - [age](https://age-encryption.org) encryption tool: `brew install age`
+
+# Announce the release
+announce:
+  skip: true

@@ -190,3 +190,28 @@ func CanDecrypt(envName string) error {
 	_, err := Decrypt(envName)
 	return err
 }
+
+// ReencryptAll re-encrypts all environments with updated authorized_keys
+func ReencryptAll() ([]string, error) {
+	cfg, err := config.Load()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
+
+	var reencrypted []string
+	var errors []string
+
+	for envName := range cfg.Environments {
+		if err := Reencrypt(envName); err != nil {
+			errors = append(errors, fmt.Sprintf("%s: %v", envName, err))
+		} else {
+			reencrypted = append(reencrypted, envName)
+		}
+	}
+
+	if len(errors) > 0 {
+		return reencrypted, fmt.Errorf("failed to re-encrypt some environments:\n  - %s", strings.Join(errors, "\n  - "))
+	}
+
+	return reencrypted, nil
+}

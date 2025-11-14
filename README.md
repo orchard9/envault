@@ -62,13 +62,36 @@ environments:
 
 ## Installation
 
-```bash
-# Install envault
-go install github.com/orchard9/envault/cmd/envault@latest
+### Quick Install (Recommended)
 
-# Install age (encryption tool)
-brew install age  # macOS
-# or: go install filippo.io/age/cmd/...@latest
+**macOS and Linux:**
+```bash
+curl -sSL https://raw.githubusercontent.com/orchard9/envault/main/install.sh | bash
+```
+
+This will download the latest binary and install it to `~/.local/bin/envault`.
+
+### Alternative: Install with Go
+
+```bash
+go install github.com/orchard9/envault/cmd/envault@latest
+```
+
+### Install age (required)
+
+`envault` uses [age](https://age-encryption.org) for encryption:
+
+```bash
+# macOS
+brew install age
+
+# Linux
+apt install age         # Debian/Ubuntu
+dnf install age         # Fedora
+pacman -S age          # Arch
+
+# Or with Go
+go install filippo.io/age/cmd/...@latest
 ```
 
 ## Setup (First Time - Admin Only)
@@ -132,7 +155,7 @@ overmind start
 # (they run: cat ~/.ssh/id_rsa.pub)
 
 envault add-key <their-public-key>
-envault reencrypt dev  # Re-encrypt with new key added
+envault reencrypt  # Re-encrypt all environments with new key added
 git add .envault/ && git commit -m "chore: add teammate to envault"
 git push
 ```
@@ -162,9 +185,7 @@ git push
 envault remove-key <key-fingerprint>
 
 # Re-encrypt all environments (they can no longer decrypt)
-envault reencrypt dev
-envault reencrypt staging
-envault reencrypt prod
+envault reencrypt
 
 git add .envault/ && git commit -m "chore: remove teammate from envault"
 git push
@@ -225,7 +246,7 @@ envault add-key <public-key>    # Add SSH public key to authorized_keys
 envault remove-key <fingerprint> # Remove key from authorized_keys
 envault encrypt <env> <file>    # Encrypt plaintext file for environment
 envault decrypt <env>           # Decrypt environment to stdout
-envault reencrypt <env>         # Re-encrypt with updated authorized_keys
+envault reencrypt [env]         # Re-encrypt with updated authorized_keys (all envs if not specified)
 envault list-keys               # Show authorized SSH keys
 envault check                   # Verify you can decrypt environments
 ```
