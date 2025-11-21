@@ -89,24 +89,36 @@ func Decrypt(envName string) ([]byte, error) {
 		return nil, fmt.Errorf("encrypted file %s does not exist", env.EncryptedFile)
 	}
 
-	// Find user's SSH private key
-	sshKeyPath, err := findSSHPrivateKey()
+	// Find all available SSH private keys and try each one
+	sshKeyPaths, err := findAllSSHPrivateKeys()
 	if err != nil {
 		return nil, err
 	}
 
-	// Run age decryption
-	cmd := exec.Command("age", "-d", "-i", sshKeyPath, encryptedPath)
+	var lastErr error
+	var triedKeys []string
 
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+	// Try each key until one works
+	for _, sshKeyPath := range sshKeyPaths {
+		triedKeys = append(triedKeys, filepath.Base(sshKeyPath))
 
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("age decryption failed: %w\nStderr: %s", err, stderr.String())
+		cmd := exec.Command("age", "-d", "-i", sshKeyPath, encryptedPath)
+
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+
+		if err := cmd.Run(); err != nil {
+			lastErr = err
+			continue // Try next key
+		}
+
+		// Success!
+		return stdout.Bytes(), nil
 	}
 
-	return stdout.Bytes(), nil
+	// None of the keys worked
+	return nil, fmt.Errorf("decryption failed with all available keys (%s): %w", strings.Join(triedKeys, ", "), lastErr)
 }
 
 // EncryptFile encrypts a plaintext file
@@ -149,11 +161,11 @@ func Reencrypt(envName string) error {
 	return nil
 }
 
-// findSSHPrivateKey finds the user's SSH private key
-func findSSHPrivateKey() (string, error) {
+// findAllSSHPrivateKeys finds all available SSH private keys in ~/.ssh
+func findAllSSHPrivateKeys() ([]string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return "", fmt.Errorf("failed to get home directory: %w", err)
+		return nil, fmt.Errorf("failed to get home directory: %w", err)
 	}
 
 	sshDir := filepath.Join(homeDir, ".ssh")
@@ -166,14 +178,19 @@ func findSSHPrivateKey() (string, error) {
 		"id_dsa",
 	}
 
+	var foundKeys []string
 	for _, keyName := range keyNames {
 		keyPath := filepath.Join(sshDir, keyName)
 		if _, err := os.Stat(keyPath); err == nil {
-			return keyPath, nil
+			foundKeys = append(foundKeys, keyPath)
 		}
 	}
 
-	return "", fmt.Errorf("no SSH private key found in %s (tried: %s)", sshDir, strings.Join(keyNames, ", "))
+	if len(foundKeys) == 0 {
+		return nil, fmt.Errorf("no SSH private key found in %s (tried: %s)", sshDir, strings.Join(keyNames, ", "))
+	}
+
+	return foundKeys, nil
 }
 
 // CheckAge verifies that the age tool is installed

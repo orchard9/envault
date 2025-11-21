@@ -1,3 +1,24 @@
+# Opinionated approach: ignore everything by default
+*
+!*/
+
+# Allow .envault configuration and encrypted files
+!.envault/config.yaml
+!.envault/*.age
+
+# Allow development files for envault itself
+!.gitignore
+!*.go
+!go.mod
+!go.sum
+!*.md
+!LICENSE
+!Makefile
+!*.sh
+!*.yaml
+!*.txt
+
+# Ignore build artifacts and OS files
 bin/
 *.test
 *.out

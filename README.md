@@ -20,11 +20,12 @@ envault dev
 `envault` stores encrypted secrets in your git repo and decrypts them with SSH keys. No services to host, no complicated setup.
 
 **Key features:**
-- Config-driven: `.envault/config.yaml` defines where secrets go
-- Multi-environment: `dev`, `staging`, `prod` encrypted separately
-- Multi-user: Multiple SSH public keys can decrypt (you control the list)
-- Zero-trust: Encrypted secrets sit in git, only authorized devs can decrypt
-- Simple: One command loads all secrets for an environment
+
+-   Config-driven: `.envault/config.yaml` defines where secrets go
+-   Multi-environment: `dev`, `staging`, `prod` encrypted separately
+-   Multi-user: Multiple SSH public keys can decrypt (you control the list)
+-   Zero-trust: Encrypted secrets sit in git, only authorized devs can decrypt
+-   Simple: One command loads all secrets for an environment
 
 ## Architecture
 
@@ -42,22 +43,22 @@ envault dev
 ```yaml
 # Define where secrets get written for each environment
 environments:
-  dev:
-    encrypted_file: dev.age
-    targets:
-      - path: .env                    # Root .env
-      - path: apps/yourproject-api/.env     # Service-specific
-      - path: apps/billing-api/.env
+    dev:
+        encrypted_file: dev.age
+        targets:
+            - path: .env # Root .env
+            - path: apps/yourproject-api/.env # Service-specific
+            - path: apps/billing-api/.env
 
-  staging:
-    encrypted_file: staging.age
-    targets:
-      - path: .env.staging
+    staging:
+        encrypted_file: staging.age
+        targets:
+            - path: .env.staging
 
-  prod:
-    encrypted_file: prod.age
-    targets:
-      - path: .env.production
+    prod:
+        encrypted_file: prod.age
+        targets:
+            - path: .env.production
 ```
 
 ## Installation
@@ -65,6 +66,7 @@ environments:
 ### Quick Install (Recommended)
 
 **macOS and Linux:**
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/orchard9/envault/main/install.sh | bash
 ```
@@ -193,12 +195,12 @@ git push
 
 ## Security Model
 
-- **Encrypted at rest**: All secrets encrypted with age (modern, audited)
-- **SSH key auth**: Uses developers' existing SSH keys (no new credentials)
-- **Access control**: Only SSH keys in `authorized_keys` can decrypt
-- **Audit trail**: Git history shows who changed secrets and when
-- **Zero-trust**: Encrypted secrets safe in public or private repos
-- **Key revocation**: Remove key + reencrypt = immediate access revocation
+-   **Encrypted at rest**: All secrets encrypted with age (modern, audited)
+-   **SSH key auth**: Uses developers' existing SSH keys (no new credentials)
+-   **Access control**: Only SSH keys in `authorized_keys` can decrypt
+-   **Audit trail**: Git history shows who changed secrets and when
+-   **Zero-trust**: Encrypted secrets safe in public or private repos
+-   **Key revocation**: Remove key + reencrypt = immediate access revocation
 
 ## How it works
 
@@ -250,23 +252,6 @@ envault reencrypt [env]         # Re-encrypt with updated authorized_keys (all e
 envault list-keys               # Show authorized SSH keys
 envault check                   # Verify you can decrypt environments
 ```
-
-## Why not Google Secret Manager directly?
-
-GSM is great for production, but for local dev:
-- ❌ Requires GCP permissions setup per developer
-- ❌ Requires active internet connection
-- ❌ More complex IAM management
-- ❌ Costs money (small, but non-zero)
-
-`envault`:
-- ✅ Works offline
-- ✅ Zero infrastructure costs
-- ✅ Uses SSH keys devs already have
-- ✅ Version controlled (see history of changes)
-- ✅ Simple admin (just manage authorized_keys)
-
-**Best of both worlds**: Use `envault` for local dev, GSM for deployed environments (staging/prod on GKE).
 
 ## Development
 

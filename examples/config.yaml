@@ -17,7 +17,7 @@ environments:
     targets:
       - path: .env.staging
 
-  # Production environment (optional - usually uses GSM)
+  # Production environment
   prod:
     encrypted_file: prod.age
     targets:
