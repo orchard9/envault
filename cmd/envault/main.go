@@ -12,7 +12,8 @@ import (
 	"github.com/orchard9/envault/internal/keys"
 )
 
-const version = "0.1.0"
+// version is set via ldflags at build time
+var version = "dev"
 
 func main() {
 	if len(os.Args) < 2 {
