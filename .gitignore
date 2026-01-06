@@ -15,6 +15,7 @@
 !LICENSE
 !Makefile
 !*.sh
+!*.ps1
 !*.yaml
 !*.txt
 

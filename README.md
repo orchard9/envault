@@ -71,7 +71,13 @@ environments:
 curl -sSL https://raw.githubusercontent.com/orchard9/envault/main/install.sh | bash
 ```
 
-This will download the latest binary and install it to `~/.local/bin/envault`.
+**Windows (PowerShell):**
+
+```powershell
+irm https://raw.githubusercontent.com/orchard9/envault/main/install.ps1 | iex
+```
+
+This will download the latest binary and install it to `~/.local/bin/envault` (or `%USERPROFILE%\.local\bin` on Windows).
 
 ### Alternative: Install with Go
 
@@ -92,7 +98,11 @@ apt install age         # Debian/Ubuntu
 dnf install age         # Fedora
 pacman -S age          # Arch
 
-# Or with Go
+# Windows
+scoop install age       # With Scoop
+winget install age      # With WinGet
+
+# Or with Go (any platform)
 go install filippo.io/age/cmd/...@latest
 ```
 
