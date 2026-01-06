@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/orchard9/envault/internal/config"
@@ -197,9 +198,21 @@ func findAllSSHPrivateKeys() ([]string, error) {
 func CheckAge() error {
 	cmd := exec.Command("age", "--version")
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("age is not installed - install with: brew install age")
+		return fmt.Errorf("age is not installed - install with: %s", ageInstallHint())
 	}
 	return nil
+}
+
+// ageInstallHint returns platform-specific installation instructions for age
+func ageInstallHint() string {
+	switch runtime.GOOS {
+	case "windows":
+		return "scoop install age (or: winget install age)"
+	case "darwin":
+		return "brew install age"
+	default:
+		return "your package manager (apt install age, dnf install age, etc.) or: go install filippo.io/age/cmd/...@latest"
+	}
 }
 
 // CanDecrypt checks if the current user can decrypt a specific environment
