@@ -199,7 +199,7 @@
     if ($installed) {
         Write-Host ""
         Write-Info "Next steps:"
-        Write-Host "  1. Install age: scoop install age  (or: winget install age)"
+        Write-Host "  1. Install age: scoop install age  (or: winget install FiloSottile.age)"
         Write-Host "  2. Run: $BinaryName --help"
     } else {
         Write-Err "Installation failed"

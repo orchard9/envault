@@ -99,8 +99,8 @@ dnf install age         # Fedora
 pacman -S age          # Arch
 
 # Windows
-scoop install age       # With Scoop
-winget install age      # With WinGet
+scoop install age              # With Scoop
+winget install FiloSottile.age # With WinGet
 
 # Or with Go (any platform)
 go install filippo.io/age/cmd/...@latest
