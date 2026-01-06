@@ -171,27 +171,62 @@ func findAllSSHPrivateKeys() ([]string, error) {
 
 	sshDir := filepath.Join(homeDir, ".ssh")
 
-	// Try common key names in order of preference
-	keyNames := []string{
-		"id_ed25519",
-		"id_rsa",
-		"id_ecdsa",
-		"id_dsa",
+	// Read all files in .ssh directory
+	entries, err := os.ReadDir(sshDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read SSH directory %s: %w", sshDir, err)
 	}
 
 	var foundKeys []string
-	for _, keyName := range keyNames {
-		keyPath := filepath.Join(sshDir, keyName)
-		if _, err := os.Stat(keyPath); err == nil {
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		name := entry.Name()
+
+		// Skip public keys and known_hosts
+		if strings.HasSuffix(name, ".pub") ||
+			name == "known_hosts" ||
+			name == "known_hosts.old" ||
+			name == "authorized_keys" ||
+			name == "config" {
+			continue
+		}
+
+		keyPath := filepath.Join(sshDir, name)
+
+		// Check if it looks like a private key (starts with -----)
+		if isPrivateKey(keyPath) {
 			foundKeys = append(foundKeys, keyPath)
 		}
 	}
 
 	if len(foundKeys) == 0 {
-		return nil, fmt.Errorf("no SSH private key found in %s (tried: %s)", sshDir, strings.Join(keyNames, ", "))
+		return nil, fmt.Errorf("no SSH private key found in %s", sshDir)
 	}
 
 	return foundKeys, nil
+}
+
+// isPrivateKey checks if a file appears to be a private key
+func isPrivateKey(path string) bool {
+	f, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	// Read first 50 bytes to check for key header
+	buf := make([]byte, 50)
+	n, err := f.Read(buf)
+	if err != nil || n == 0 {
+		return false
+	}
+
+	content := string(buf[:n])
+	return strings.Contains(content, "-----BEGIN") ||
+		strings.Contains(content, "PRIVATE KEY")
 }
 
 // CheckAge verifies that the age tool is installed
