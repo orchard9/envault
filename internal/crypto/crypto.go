@@ -207,7 +207,7 @@ func CheckAge() error {
 func ageInstallHint() string {
 	switch runtime.GOOS {
 	case "windows":
-		return "scoop install age (or: winget install FiloSottile.age)"
+		return "scoop install age (or: winget install -e --id FiloSottile.age)"
 	case "darwin":
 		return "brew install age"
 	default:
